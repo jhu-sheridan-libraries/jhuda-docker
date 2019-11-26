@@ -1,0 +1,99 @@
+version: '3.1'
+
+services:
+
+  fcrepo:
+    image: jhuda/fcrepo@sha256:2de908802242fc4fe0a785ad3df777cd8fd1516d737a3bcdd5b3ee9934b69ebd
+    container_name: fcrepo
+    env_file: .env
+    networks:
+      - front
+      - back
+    ports:
+      - "${FCREPO_PORT}:${FCREPO_PORT}"
+    volumes:
+      - jhuda-data:/data
+    depends_on:
+      - assets
+      - activemq
+
+  activemq:
+    image: jhuda/activemq@sha256:09fcc86c29015d48aae144d753bde63cb76a9b6a3748d2737a8a224e0cabff33
+    container_name: activemq
+    env_file: .env
+    networks:
+      - front
+      - back
+
+  proxy:
+    image: jhuda/proxy@sha256:898d516f8f39894a6f2cd51ce3e20a75f76e01467c0f62f431cc6c6926b2291d
+    container_name: proxy
+    networks:
+      - front
+      - back
+    ports:
+      - "80:80"
+      - "443:443"
+
+  idp:
+    image: jhuda/idp@sha256:8135d93c40dc32f7d63f46768e4e6eea72267de7e50022d04d41fecbebf819f5
+    container_name: idp
+    depends_on:
+      - ldap
+    environment:
+      - JETTY_MAX_HEAP=64m
+      - JETTY_BROWSER_SSL_KEYSTORE_PASSWORD=password
+      - JETTY_BACKCHANNEL_SSL_KEYSTORE_PASSWORD=password
+    expose:
+      - "4443"
+    networks:
+      - back
+    secrets:
+      - source: idp_backchannel
+      - source: idp_browser
+      - source: idp_encryption
+      - source: idp_signing
+      - source: idp_sealer
+
+  sp:
+    image: jhuda/sp@sha256:3c548d43b620ddb42b0292034e19376aa0fb2bc7e061dad77553d81feef993c9
+    container_name: sp
+    networks:
+      - back
+    secrets:
+      - source: sp_key
+
+  ldap:
+    image: jhuda/ldap@sha256:b7b00f1301227b8a654ca4c313856ed1047efdd061b9d10771030767c3dee0ad
+    container_name: ldap
+    networks:
+      - back
+
+  assets:
+    image: jhuda/assets@sha256:e6289ddba514b2bf44149b0954ce65bc47b7c68d7343ade69b92939cdaf2e397
+    volumes:
+      - jhuda-data:/data
+
+volumes:
+  jhuda-data:
+    driver: local
+
+networks:
+  front:
+    driver: bridge
+  back:
+    driver: bridge
+
+secrets:
+  idp_backchannel:
+    file: ./secrets/idp/idp-backchannel.p12
+  idp_browser:
+    file: ./secrets/idp/idp-browser.p12
+  idp_encryption:
+    file: ./secrets/idp/idp-encryption.key
+  idp_signing:
+    file: ./secrets/idp/idp-signing.key
+  idp_sealer:
+    file: ./secrets/idp/sealer.jks
+  sp_key:
+    file: ./secrets/sp/sp-key.pem
