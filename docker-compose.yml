@@ -3,14 +3,14 @@ version: '3.1'
 services:
 
   fcrepo:
-    image: jhuda/fcrepo@sha256:2de908802242fc4fe0a785ad3df777cd8fd1516d737a3bcdd5b3ee9934b69ebd
+    image: jhuda/fcrepo@sha256:646f98030c00d94ef5fc7d6a92debf8229f172d39bad5e6ea47f2b5c76d149be
     container_name: fcrepo
     env_file: .env
     networks:
       - front
       - back
     ports:
-      - "${FCREPO_PORT}:${FCREPO_PORT}"
+      - "${FCREPO_JETTY_PORT}:${FCREPO_JETTY_PORT}"
     volumes:
       - jhuda-data:/data
     depends_on:
@@ -18,7 +18,7 @@ services:
       - activemq
 
   activemq:
-    image: jhuda/activemq@sha256:09fcc86c29015d48aae144d753bde63cb76a9b6a3748d2737a8a224e0cabff33
+    image: jhuda/activemq@sha256:4975941f1325e17c53cfb14cb695e4e7b07f4f8c86c05a4418e1a03941f9dff5
     container_name: activemq
     env_file: .env
     networks:
@@ -26,7 +26,7 @@ services:
       - back
 
   proxy:
-    image: jhuda/proxy@sha256:898d516f8f39894a6f2cd51ce3e20a75f76e01467c0f62f431cc6c6926b2291d
+    image: jhuda/proxy@sha256:3040fb8ff4cf2e9d60aa836ffae76d55f486523e30324ccc393568563fe1e27a
     container_name: proxy
     networks:
       - front
@@ -36,7 +36,7 @@ services:
       - "443:443"
 
   idp:
-    image: jhuda/idp@sha256:8135d93c40dc32f7d63f46768e4e6eea72267de7e50022d04d41fecbebf819f5
+    image: jhuda/idp@sha256:dd0f61e3a1881b7d22aab8c8968b0fa925336dc4859dceb19eba247bab5be9ed
     container_name: idp
     depends_on:
       - ldap
@@ -56,7 +56,7 @@ services:
       - source: idp_sealer
 
   sp:
-    image: jhuda/sp@sha256:3c548d43b620ddb42b0292034e19376aa0fb2bc7e061dad77553d81feef993c9
+    image: jhuda/sp@sha256:a86e5d20f0ef0248929ff5b16ec4d01ccfb2640372c624b53b74240396572ce7
     container_name: sp
     networks:
       - back
@@ -70,7 +70,7 @@ services:
       - back
 
   assets:
-    image: jhuda/assets@sha256:e6289ddba514b2bf44149b0954ce65bc47b7c68d7343ade69b92939cdaf2e397
+    image: jhuda/assets@sha256:37b543615d649556dafe4fb1fc6a5a09fd5467d1c5ba21ebf07883fd64d44180
     volumes:
       - jhuda-data:/data
 
