@@ -28,6 +28,8 @@ services:
   proxy:
     image: jhuda/proxy@sha256:3040fb8ff4cf2e9d60aa836ffae76d55f486523e30324ccc393568563fe1e27a
     container_name: proxy
+    volumes: 
+      - certs:/etc/httpd/ssl
     networks:
       - front
       - back
@@ -56,10 +58,16 @@ services:
       - source: idp_sealer
 
   sp:
-    image: jhuda/sp@sha256:a86e5d20f0ef0248929ff5b16ec4d01ccfb2640372c624b53b74240396572ce7
+    image: jhuda/sp@sha256:d65b4b3f3e892cb5891f9be0f26449bd5f6218b4bf13bff23322cb0deac781d7
     container_name: sp
+    depends_on: 
+      - proxy
     networks:
-      - back
+      back:
+       aliases:
+         - archive.local
+    volumes:
+      - certs:/etc/httpd/ssl
     secrets:
       - source: sp_key
 
@@ -76,6 +84,8 @@ services:
 
 volumes:
   jhuda-data:
+    driver: local
+  certs:
     driver: local
 
 networks:
